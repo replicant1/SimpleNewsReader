@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@color/Red"
+              android:orientation="vertical"
+              android:padding="8dp">
+
+    <!--
+    Heading occupies entire width of the list item and wraps to as many rows
+    as required to display it in its entirety.
+    -->
+
+    <TextView
+        android:id="@+id/news_item_heading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:background="@color/Beige"
+        android:textColor="@color/Navy"
+        android:textSize="18sp"
+        android:textStyle="normal"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/DarkSeaGreen"
+        android:orientation="horizontal">
+
+        <!--
+   Subheading sits under the heading, aligned to the left of the list item. Stretches as wide
+   as possible while still leaving room for the news_item_image. Occupies as much height as
+   necessary to display text in full.
+   -->
+
+        <TextView
+            android:id="@+id/news_item_subheading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="4dp"
+            android:layout_weight="1"
+            android:background="@color/Aqua"
+            android:textColor="@color/Black"
+            android:textSize="12sp"
+            android:textStyle="normal"/>
+
+        <!--
+        Image for the item, sits under the heading and is aligned at far right. Occupies only the
+        area needed to fully display it. No max size is imposed at the moment.
+        -->
+
+
+        <ImageView
+            android:id="@+id/news_item_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:visibility="visible"/>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
