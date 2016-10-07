@@ -10,16 +10,10 @@ import java.util.Properties;
 import news.rod.bailey.simplenewsreader.app.SimpleNewsReaderApplication;
 
 /**
- * Created by rodbailey on 6/10/2016.
+ * Provides read-only access to the runtime configuration properties contained in the file assets/PROPERTIES_FILE_NAME.
+ * Clients should use the singleton instance available through ConfigSingleton.getInstance().
  */
-
 public final class ConfigSingleton {
-
-
-    /**
-     * Provides read-only access to the runtime configuration properties contained in the file assets/PROPERTIES_FILE_NAME.
-     * Clients should use the singleton instance available through ConfigSingleton.getInstance().
-     */
 
     /**
      * Name of properties file in the assets directory
@@ -69,7 +63,7 @@ public final class ConfigSingleton {
         return getBoolProperty("NewsService.fake.succeeds");
     }
 
-    public int TraveTimeServiceTimeoutMillis() {
+    public int NewsServiceTimeoutMillis() {
         return getIntProperty("NewsService.timeout.millis");
     }
 
@@ -78,8 +72,10 @@ public final class ConfigSingleton {
     }
 
     public boolean UseFakeNewsService() {
-        return getBoolProperty("NewsService.fake.use");
+        return getBoolProperty("NewsService.fake");
     }
+
+    public boolean CallNewsServiceAsync() { return getBoolProperty("NewsService.async"); }
 
     private boolean getBoolProperty(String propertyName) {
         return Boolean.parseBoolean(configProperties.getProperty(propertyName));
@@ -93,6 +89,12 @@ public final class ConfigSingleton {
         return configProperties.getProperty(propertyName).trim();
     }
 
+    /**
+     * Made this public to facilitate testing.
+     *
+     * @param propertyName
+     * @return
+     */
     public boolean hasProperty(String propertyName) {
         return configProperties.containsKey(propertyName);
     }
