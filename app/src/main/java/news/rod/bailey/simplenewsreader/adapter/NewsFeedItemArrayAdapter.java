@@ -76,10 +76,10 @@ public class NewsFeedItemArrayAdapter extends ArrayAdapter<NewsFeedItem> {
 
 
         if (item.imageHref != null) {
-            image.setImageResource(R.drawable.beaver);
+//            image.setImageResource(R.drawable.beaver);
 
-//            GetBitmapAsync job = new GfetBitmapAsync(item.imageHref, image);
-//            job.execute();
+            GetBitmapAsync job = new GetBitmapAsync(item.imageHref, image);
+            job.execute();
         }
         else {
             image.setVisibility(View.GONE);
