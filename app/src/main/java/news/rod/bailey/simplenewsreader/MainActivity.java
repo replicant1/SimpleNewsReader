@@ -4,6 +4,8 @@ package news.rod.bailey.simplenewsreader;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
 
 import com.android.volley.Response;
@@ -41,6 +43,24 @@ public class MainActivity extends AppCompatActivity {
         public void onErrorResponse(VolleyError error) {
             Log.w(LOG_TAG, error.getMessage(), error.getCause());
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_refresh) {
+            Log.i(LOG_TAG, getString(R.string.action_refresh));
+
+            // Restart the present activity with an empty cache
+            recreate();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private class GetNewsSuccessHandler implements Response.Listener<String> {

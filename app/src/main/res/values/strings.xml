@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">SimpleNewsReader</string>
+    <string name="action_refresh">Refresh</string>
 
 </resources>
