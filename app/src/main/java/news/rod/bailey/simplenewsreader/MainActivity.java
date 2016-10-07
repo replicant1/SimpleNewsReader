@@ -10,6 +10,8 @@ import android.widget.ListView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,14 +30,23 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
+    private ImageLoader imageLoader;
+
+    private INewsService newsService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 
-        INewsService service = new FakeSyncNewsService();
-        service.getNews(new GetNewsSuccessHandler(), new GetsNewsFailureHandler());
+        // @see https://github.com/nostra13/Android-Universal-Image-Loader/wiki/Configuration
+        ImageLoaderConfiguration imageConfig = new ImageLoaderConfiguration.Builder(this).build();
+        imageLoader = ImageLoader.getInstance();
+        imageLoader.init(imageConfig);
+
+        newsService = new FakeSyncNewsService();
+        newsService.getNews(new GetNewsSuccessHandler(), new GetsNewsFailureHandler());
     }
 
     private class GetsNewsFailureHandler implements Response.ErrorListener {
@@ -86,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 // Put feed.rows in the list view
-                NewsFeedItemArrayAdapter adapter = new NewsFeedItemArrayAdapter(strippedItems);
+                NewsFeedItemArrayAdapter adapter = new NewsFeedItemArrayAdapter(strippedItems, imageLoader);
                 ListView listView = (ListView) findViewById(R.id.news_item_list);
                 listView.setAdapter(adapter);
             }

@@ -8,7 +8,8 @@ This is an Android coding exercise. The app is called `SimpleNewsReader` and rea
 
 ##Screenshots
 
-TBD
+![Portrait](/snr_screenshot_portrait.png)
+
 
 ## Test Coverage
 
@@ -26,3 +27,4 @@ The following libraries are used:
 - **Volley** - by Google. Handles the mechanics of the HTTP request for downloading the JSON. Saves me having to deal with redirects etc.
 - **GSON** - by Google. Handles the parsing of the JSON data into data objects you provide.
 - **JUnit** - for unit testing.
+- **UIL** - Android Universal Image Loader. Asynchronously loads and caches the images referenced from the JSON.

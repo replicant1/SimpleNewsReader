@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name">SimpleNewsReader</string>
     <string name="action_refresh">Refresh</string>
+    <string name="image_loading">Image loading...</string>
+    <string name="image_bad">Bad image</string>
+    <string name="image_not_found">Image not foundR</string>
+    <string name="image_no_network">No network access</string>
+    <string name="image_out_of_memory">Out of memory</string>
+    <string name="image_unknown">Unknown failure</string>
+    <string name="image_load_cancelled">Load cancelled</string>
 
 </resources>

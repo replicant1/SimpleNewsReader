@@ -2,7 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="news.rod.bailey.simplenewsreader">
 
+    <!-- JSON text and images referenced from the JSON need to be loaded over net -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Universal image loader library nees to write cached images to SD card -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".app.SimpleNewsReaderApplication"
