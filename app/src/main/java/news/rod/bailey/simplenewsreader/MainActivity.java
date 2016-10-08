@@ -2,10 +2,13 @@ package news.rod.bailey.simplenewsreader;
 
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 
 import com.android.volley.Response;
@@ -32,7 +35,11 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageLoader imageLoader;
 
+    private ListView listView;
+
     private INewsService newsService;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +47,57 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        listView = (ListView) findViewById(R.id.news_item_list);
+
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.news_item_list_swipe_refresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeToRefreshListener());
+        swipeRefreshLayout.setColorSchemeColors(
+                getResources().getColor(R.color.Red),
+                getResources().getColor(R.color.Green),
+                getResources().getColor(R.color.Yellow),
+                getResources().getColor(R.color.Blue));
+        swipeRefreshLayout.setOnChildScrollUpCallback(new SwipeRefreshLayout.OnChildScrollUpCallback() {
+            @Override
+            public boolean canChildScrollUp(SwipeRefreshLayout parent, @Nullable View child) {
+                return listView.getFirstVisiblePosition() != 0;
+            }
+        });
+
+        refresh();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(LOG_TAG, "canChildScrollUp=" + swipeRefreshLayout.canChildScrollUp());
+        if (item.getItemId() == R.id.action_refresh) {
+            Log.i(LOG_TAG, getString(R.string.action_refresh));
+
+            // Restart the present activity - this results in image cache being destroyed and
+            // recreated. Also, feed JSON will be reloaded.
+            refresh();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void refresh() {
+        Log.i(LOG_TAG, "** Into MainActivity.refresh() ****");
+        swipeRefreshLayout.setRefreshing(true);
+
+
+
         // @see https://github.com/nostra13/Android-Universal-Image-Loader/wiki/Configuration
+        if (imageLoader != null) {
+            imageLoader.destroy();
+        }
+
         ImageLoaderConfiguration imageConfig = new ImageLoaderConfiguration.Builder(this).build();
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(imageConfig);
@@ -53,27 +110,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onErrorResponse(VolleyError error) {
             Log.w(LOG_TAG, error.getMessage(), error.getCause());
+            swipeRefreshLayout.setRefreshing(false);
+            // TODO: Raise a toast saying "Failed, try refreshing again"
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_refresh) {
-            Log.i(LOG_TAG, getString(R.string.action_refresh));
-
-            // Restart the present activity with an empty cache
-            recreate();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
+    /**
+     *
+     */
     private class GetNewsSuccessHandler implements Response.Listener<String> {
 
         @Override
@@ -100,10 +144,23 @@ public class MainActivity extends AppCompatActivity {
                 NewsFeedItemArrayAdapter adapter = new NewsFeedItemArrayAdapter(strippedItems, imageLoader);
                 ListView listView = (ListView) findViewById(R.id.news_item_list);
                 listView.setAdapter(adapter);
+
+
             }
             else {
                 Log.w(LOG_TAG, "Received news feed string of null");
             }
+
+            swipeRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    private class SwipeToRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
+        @Override
+        public void onRefresh() {
+            Log.i(LOG_TAG, "*** onRefresh() is called ***");
+
+            refresh();
         }
     }
 }
