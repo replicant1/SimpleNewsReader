@@ -8,5 +8,6 @@
     <string name="image_out_of_memory">Out of memory</string>
     <string name="image_unknown">Unknown failure</string>
     <string name="image_load_cancelled">Load cancelled</string>
+    <string name="news_feed_load_failure">Failed to load news feed. Check internet and try again.</string>
 
 </resources>

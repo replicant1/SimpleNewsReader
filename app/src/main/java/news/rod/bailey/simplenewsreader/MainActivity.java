@@ -14,8 +14,6 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -27,8 +25,6 @@ import news.rod.bailey.simplenewsreader.app.SimpleNewsReaderApplication;
 import news.rod.bailey.simplenewsreader.json.NewsFeed;
 import news.rod.bailey.simplenewsreader.json.NewsFeedItem;
 import news.rod.bailey.simplenewsreader.json.NewsFeedParser;
-import news.rod.bailey.simplenewsreader.service.FakeAsyncNewsService;
-import news.rod.bailey.simplenewsreader.service.FakeSyncNewsService;
 import news.rod.bailey.simplenewsreader.service.INewsService;
 import news.rod.bailey.simplenewsreader.service.NewsServiceFactorySingleton;
 import news.rod.bailey.simplenewsreader.util.ConfigSingleton;
@@ -96,6 +92,11 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void raiseFailureToast() {
+        Toast.makeText(SimpleNewsReaderApplication.context, R.string.news_feed_load_failure, Toast
+                .LENGTH_LONG).show();
     }
 
     /**
@@ -181,11 +182,6 @@ public class MainActivity extends AppCompatActivity {
             swipeRefreshLayout.setRefreshing(false);
 
         } // onResponse()
-    }
-
-    private void raiseFailureToast() {
-        Toast.makeText(SimpleNewsReaderApplication.context, "Failed to load news feed. Try again.", Toast
-                .LENGTH_LONG).show();
     }
 
     /**
