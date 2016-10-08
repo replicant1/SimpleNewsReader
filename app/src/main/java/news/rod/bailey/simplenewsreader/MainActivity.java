@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -108,7 +109,16 @@ public class MainActivity extends AppCompatActivity {
             imageLoader.destroy();
         }
 
-        ImageLoaderConfiguration imageConfig = new ImageLoaderConfiguration.Builder(this).build();
+        int memoryCacheBytes = ConfigSingleton.getInstance().ImageLoaderMemoryCacheKB();
+        int diskCacheBytes = ConfigSingleton.getInstance().ImageLoaderDiskCacheKB();
+        
+        ImageLoaderConfiguration imageConfig = new ImageLoaderConfiguration.Builder(this)
+                .denyCacheImageMultipleSizesInMemory()
+                .memoryCache(new LruMemoryCache(memoryCacheBytes))
+                .memoryCacheSize(memoryCacheBytes)
+                .diskCacheSize(diskCacheBytes)
+                .writeDebugLogs()
+                .build();
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(imageConfig);
 

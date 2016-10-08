@@ -34,7 +34,16 @@ Being a simple coding exercise, I have made a few simplifying assumpions:
 ##Technologies
 The following libraries are used:
 
-- **Volley** - by Google. Handles the mechanics of the HTTP request for downloading the JSON. Saves me having to deal with redirects etc.
+- **Volley** - by Google. Handles the mechanics of the HTTP request for downloading the JSON. Saves me having to deal with redirects etc. Also can do caching.
 - **GSON** - by Google. Handles the parsing of the JSON data into data objects you provide.
 - **JUnit** - for unit testing.
 - **UIL** - Android Universal Image Loader. Asynchronously loads and caches the images referenced from the JSON.
+
+##Caching
+
+`UIL` provides memory and disk caching upon request. We establish a memory cache of 200KB and a disk cache of 250KB. These figures are arbitrary selections. They are specified in `/assets/config.properties`.
+
+##Potential improvements
+
+- Only cache the thumbnails, not the original images at their full size.
+- When an image is not found, don't keep trying to reload it in future. Somehow record that we have already tried to load it in this session, and failed.

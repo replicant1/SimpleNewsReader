@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -62,8 +63,15 @@ public class NewsFeedItemArrayAdapter extends ArrayAdapter<NewsFeedItem> {
         Log.d(LOG_TAG, "Raw imageHref=" + item.imageHref);
 
         if (item.imageHref != null) {
+            DisplayImageOptions displayOptions = new DisplayImageOptions.Builder()
+                    .cacheInMemory(true)
+                    .cacheOnDisk(true)
+                    .resetViewBeforeLoading(true)
+                    .build();
+
             imageLoader.displayImage(item.imageHref, // URL of image to load
                                      imageView, // ImageView to load image into
+                                     displayOptions, //
                                      new NewsItemImageLoadingListener(imageViewFrame, imageView, imageMessage));
         } else {
             // The image in a news item is optional. Hide it to let description text occupy full width of list item.

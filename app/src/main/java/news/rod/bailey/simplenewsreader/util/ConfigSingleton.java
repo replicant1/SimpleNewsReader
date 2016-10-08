@@ -81,6 +81,10 @@ public final class ConfigSingleton {
 
     public boolean CallNewsServiceAsync() { return getBoolProperty("NewsService.async"); }
 
+    public int ImageLoaderMemoryCacheKB() { return getIntProperty("ImageLoader.cache.memory.kb"); }
+
+    public int ImageLoaderDiskCacheKB() { return getIntProperty("ImageLoader.cache.disk.kb"); }
+
     private boolean getBoolProperty(String propertyName) {
         return Boolean.parseBoolean(configProperties.getProperty(propertyName));
     }
