@@ -10,9 +10,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -21,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import news.rod.bailey.simplenewsreader.adapter.NewsFeedItemArrayAdapter;
+import news.rod.bailey.simplenewsreader.app.SimpleNewsReaderApplication;
 import news.rod.bailey.simplenewsreader.json.NewsFeed;
 import news.rod.bailey.simplenewsreader.json.NewsFeedItem;
 import news.rod.bailey.simplenewsreader.json.NewsFeedParser;
@@ -109,12 +112,11 @@ public class MainActivity extends AppCompatActivity {
             imageLoader.destroy();
         }
 
-        int memoryCacheBytes = ConfigSingleton.getInstance().ImageLoaderMemoryCacheKB();
-        int diskCacheBytes = ConfigSingleton.getInstance().ImageLoaderDiskCacheKB();
-        
+        // Convert from KB to bytes
+        int memoryCacheBytes = ConfigSingleton.getInstance().ImageLoaderMemoryCacheKB() * 1024;
+        int diskCacheBytes = ConfigSingleton.getInstance().ImageLoaderDiskCacheKB() * 1024;
+
         ImageLoaderConfiguration imageConfig = new ImageLoaderConfiguration.Builder(this)
-                .denyCacheImageMultipleSizesInMemory()
-                .memoryCache(new LruMemoryCache(memoryCacheBytes))
                 .memoryCacheSize(memoryCacheBytes)
                 .diskCacheSize(diskCacheBytes)
                 .writeDebugLogs()
@@ -136,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         public void onErrorResponse(VolleyError error) {
             Log.w(LOG_TAG, error.getMessage(), error.getCause());
             swipeRefreshLayout.setRefreshing(false);
-            // TODO: Raise a toast saying "Failed, try refreshing again"
+            raiseFailureToast();
         }
     }
 
@@ -173,12 +175,17 @@ public class MainActivity extends AppCompatActivity {
                 listView.setAdapter(adapter);
             } else {
                 Log.w(LOG_TAG, "Received news feed string of null");
-                // TODO: Raise error toast
+                raiseFailureToast();
             }
 
             swipeRefreshLayout.setRefreshing(false);
 
         } // onResponse()
+    }
+
+    private void raiseFailureToast() {
+        Toast.makeText(SimpleNewsReaderApplication.context, "Failed to load news feed. Try again.", Toast
+                .LENGTH_LONG).show();
     }
 
     /**

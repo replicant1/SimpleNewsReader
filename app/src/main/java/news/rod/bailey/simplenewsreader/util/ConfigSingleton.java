@@ -85,6 +85,10 @@ public final class ConfigSingleton {
 
     public int ImageLoaderDiskCacheKB() { return getIntProperty("ImageLoader.cache.disk.kb"); }
 
+    public int NewsServiceCacheKB() { return getIntProperty("NewsService.cache.kb"); }
+
+    public int NewsServiceRetriesMax() { return getIntProperty("NewsService.retries.max"); }
+
     private boolean getBoolProperty(String propertyName) {
         return Boolean.parseBoolean(configProperties.getProperty(propertyName));
     }

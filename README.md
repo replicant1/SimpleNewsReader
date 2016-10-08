@@ -41,9 +41,12 @@ The following libraries are used:
 
 ##Caching
 
-`UIL` provides memory and disk caching upon request. We establish a memory cache of 200KB and a disk cache of 250KB. These figures are arbitrary selections. They are specified in `/assets/config.properties`.
+`UIL` provides memory and disk caching upon request. We establish a memory cache of 200KB and a disk cache of 250KB. These figures are arbitrary selections. They are specified in `/assets/config.properties`. 
+
+Note that the feed at `https://dl.dropboxusercontent.com/u/746330/facts.json` supplies a header of `max-age=0`, meaning that it can't be cached, despite the fact that Volley has the capability to do so.
 
 ##Potential improvements
 
 - Only cache the thumbnails, not the original images at their full size.
 - When an image is not found, don't keep trying to reload it in future. Somehow record that we have already tried to load it in this session, and failed.
+- Cache the JSON text so that it is not reloaded on an orientation change. Images are not reloaded on an orientation change becuase the ImageLoader's cache persists across the change in orientation and the images returned are cacheable. But the JSON feed at the default location is marked as being not cacheable, meaning that Volley doesn't cache it, meaning that it is reloaded upon an orientation change.

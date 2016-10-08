@@ -60,8 +60,6 @@ public class NewsFeedItemArrayAdapter extends ArrayAdapter<NewsFeedItem> {
         heading.setText(item.title == null ? "" : item.title);
         subHeading.setText(item.description == null ? "" : item.description);
 
-        Log.d(LOG_TAG, "Raw imageHref=" + item.imageHref);
-
         if (item.imageHref != null) {
             DisplayImageOptions displayOptions = new DisplayImageOptions.Builder()
                     .cacheInMemory(true)
