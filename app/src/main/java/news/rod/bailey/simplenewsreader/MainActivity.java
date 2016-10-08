@@ -27,18 +27,36 @@ import news.rod.bailey.simplenewsreader.service.FakeSyncNewsService;
 import news.rod.bailey.simplenewsreader.service.INewsService;
 
 /**
- *
+ * Sole activity of the SimpleNewsReader application. This app reads a JSON news feed from a URL specified in the
+ * config.properties file and displays each new item in a list, one row per news item. Note that if a new item does
+ * not have BOTH a title and a description defined, it is not included in the list. The image is considered optional.
+ * The app occupies only a single screen.
  */
 public class MainActivity extends AppCompatActivity {
 
+    /**
+     * For Log statements
+     */
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
+    /**
+     * Provided by Universal Image Loader to handle async loading of the optional image for each news item
+     */
     private ImageLoader imageLoader;
 
+    /**
+     * Main component - a list of news items, one item per row
+     */
     private ListView listView;
 
+    /**
+     * Service from which news is retrieved. May be local/remote or a/sync depending on the implementation
+     */
     private INewsService newsService;
 
+    /**
+     * Provides pull-to-refresh functionaity for the listview of news items
+     */
     private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
@@ -51,17 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.news_item_list_swipe_refresh);
         swipeRefreshLayout.setOnRefreshListener(new SwipeToRefreshListener());
-        swipeRefreshLayout.setColorSchemeColors(
-                getResources().getColor(R.color.Red),
-                getResources().getColor(R.color.Green),
-                getResources().getColor(R.color.Yellow),
-                getResources().getColor(R.color.Blue));
-        swipeRefreshLayout.setOnChildScrollUpCallback(new SwipeRefreshLayout.OnChildScrollUpCallback() {
-            @Override
-            public boolean canChildScrollUp(SwipeRefreshLayout parent, @Nullable View child) {
-                return listView.getFirstVisiblePosition() != 0;
-            }
-        });
+        swipeRefreshLayout.setOnChildScrollUpCallback(new ChildScrollUpCallback());
 
         refresh();
     }
@@ -75,25 +83,23 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.d(LOG_TAG, "canChildScrollUp=" + swipeRefreshLayout.canChildScrollUp());
         if (item.getItemId() == R.id.action_refresh) {
-            Log.i(LOG_TAG, getString(R.string.action_refresh));
-
-            // Restart the present activity - this results in image cache being destroyed and
-            // recreated. Also, feed JSON will be reloaded.
             refresh();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Initiates a complete reloading of data. The imageLoader is destroyed and recreated, so all cached images are
+     * lost. The JSON feed, which is only  "cached" by Volley and in the ListView itself, is also destroyed and must
+     * be refetched.
+     */
     private void refresh() {
-        Log.i(LOG_TAG, "** Into MainActivity.refresh() ****");
+        // Set the "refresh" animation going
         swipeRefreshLayout.setRefreshing(true);
 
-
-
-        // @see https://github.com/nostra13/Android-Universal-Image-Loader/wiki/Configuration
+        // Destroy cached images and creates a new cache
         if (imageLoader != null) {
             imageLoader.destroy();
         }
@@ -102,10 +108,15 @@ public class MainActivity extends AppCompatActivity {
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(imageConfig);
 
+        // Create the INewsService as per config.properties.
         newsService = new FakeSyncNewsService();
         newsService.getNews(new GetNewsSuccessHandler(), new GetsNewsFailureHandler());
     }
 
+    /**
+     * Handles failure of the HTTP GET that is used to retrieve the feed's JSON. Just cancels the "refresh" animation
+     * and raises a Toast with an error message in it.
+     */
     private class GetsNewsFailureHandler implements Response.ErrorListener {
         @Override
         public void onErrorResponse(VolleyError error) {
@@ -116,7 +127,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *
+     * Handles successfull retrieval of the feed's JSON file. Parses out the data into the local domain model then
+     * feeds that model into the list view via the NewsFeedItemArrayAdapter. Cancels the "refresh" animation.
      */
     private class GetNewsSuccessHandler implements Response.Listener<String> {
 
@@ -125,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
             if (response != null) {
                 Log.i(LOG_TAG, "Received news feed string of length " + response.length());
 
+                // Parse retrieved JSON string into domain objects
                 NewsFeedParser parser = new NewsFeedParser();
                 NewsFeed feed = parser.parseFeedFromString(response);
 
@@ -134,33 +147,44 @@ public class MainActivity extends AppCompatActivity {
                 // Title and description are mandatory, image is not.
                 List<NewsFeedItem> items = feed.rows;
                 List<NewsFeedItem> strippedItems = new LinkedList<NewsFeedItem>();
-                for(NewsFeedItem item : items) {
+                for (NewsFeedItem item : items) {
                     if ((item.title != null) && (item.description != null)) {
                         strippedItems.add(item);
                     }
                 }
 
-                // Put feed.rows in the list view
+                // Put parsed data in the list view
                 NewsFeedItemArrayAdapter adapter = new NewsFeedItemArrayAdapter(strippedItems, imageLoader);
                 ListView listView = (ListView) findViewById(R.id.news_item_list);
                 listView.setAdapter(adapter);
-
-
-            }
-            else {
+            } else {
                 Log.w(LOG_TAG, "Received news feed string of null");
+                // TODO: Raise error toast
             }
 
             swipeRefreshLayout.setRefreshing(false);
-        }
+
+        } // onResponse()
     }
 
+    /**
+     * Handles when user swipes on list view in such a way as to indicate they want to "pull to refresh".
+     */
     private class SwipeToRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
         @Override
         public void onRefresh() {
-            Log.i(LOG_TAG, "*** onRefresh() is called ***");
-
             refresh();
+        }
+    }
+
+    /**
+     * Bug fix supplied in support library v24.1.0 - enables us to turn off triggerring of the refresh with the
+     * "pull" gesture unless the first row of the list is showing.
+     */
+    private class ChildScrollUpCallback implements SwipeRefreshLayout.OnChildScrollUpCallback {
+        @Override
+        public boolean canChildScrollUp(SwipeRefreshLayout parent, @Nullable View child) {
+            return listView.getFirstVisiblePosition() != 0;
         }
     }
 }
