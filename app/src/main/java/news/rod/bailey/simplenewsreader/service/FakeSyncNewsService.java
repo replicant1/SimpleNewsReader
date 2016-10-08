@@ -15,7 +15,7 @@ import news.rod.bailey.simplenewsreader.util.ConfigSingleton;
 
 /**
  * An implementation of INewsService that is suitable for JUnit testing. Returns dummy data
- * read from /assets/sample.json.
+ * read from /assets/sample.json on the same thread as the caller.
  */
 public class FakeSyncNewsService implements INewsService {
 

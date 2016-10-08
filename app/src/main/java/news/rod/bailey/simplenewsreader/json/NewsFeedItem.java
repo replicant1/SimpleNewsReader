@@ -1,14 +1,16 @@
 package news.rod.bailey.simplenewsreader.json;
 
 /**
- * Created by rodbailey on 6/10/2016.
+ * Second level object in domain model. Each instance corresponds to an element of the "rows" array in the feed's JSON.
+ * Field values are supplied by GSON.
  */
-
 public class NewsFeedItem {
 
-    public  String title;
-    public  String description;
+    public String description;
+
     public String imageHref;
+
+    public String title;
 
     @Override
     public String toString() {

@@ -28,7 +28,9 @@ public class FakeAsyncNewsService implements INewsService {
     }
 
     /**
-     * Params, Progress, Result
+     * Generic types represent: Params, Progress, Result.
+     * Called asynchronously to mimic the retrieval of JSON data from a remote source. Actually just reads the file
+     * /assets/sample.json and then sleeps awhile to simulate network latency.
      */
     private class FakeAsyncGetNewsJob extends AsyncTask<Void, Void, String> {
 
@@ -38,7 +40,11 @@ public class FakeAsyncNewsService implements INewsService {
 
         private final Response.ErrorListener failureHandler;
 
-
+        /**
+         * @param successHandler Invoked when data is loaded OK
+         * @param failureHandler Invoked when data cannot be loaded. This is usef for testing load failure, and
+         *                       requires that ConfigSingleton.getInstance().FakeNewsServiceSucceeds() be set to false.
+         */
         public FakeAsyncGetNewsJob(Response.Listener successHandler, Response.ErrorListener failureHandler) {
             this.successHandler = successHandler;
             this.failureHandler = failureHandler;
@@ -51,8 +57,7 @@ public class FakeAsyncNewsService implements INewsService {
 
             try {
                 Thread.sleep(ConfigSingleton.getInstance().FakeNewsServiceDelayMillis());
-            }
-            catch (InterruptedException iex) {
+            } catch (InterruptedException iex) {
                 Log.e(LOG_TAG, "Failed to sleep to imitate network latency", iex);
             }
 

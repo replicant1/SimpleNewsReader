@@ -23,8 +23,11 @@ import news.rod.bailey.simplenewsreader.adapter.NewsFeedItemArrayAdapter;
 import news.rod.bailey.simplenewsreader.json.NewsFeed;
 import news.rod.bailey.simplenewsreader.json.NewsFeedItem;
 import news.rod.bailey.simplenewsreader.json.NewsFeedParser;
+import news.rod.bailey.simplenewsreader.service.FakeAsyncNewsService;
 import news.rod.bailey.simplenewsreader.service.FakeSyncNewsService;
 import news.rod.bailey.simplenewsreader.service.INewsService;
+import news.rod.bailey.simplenewsreader.service.NewsServiceFactorySingleton;
+import news.rod.bailey.simplenewsreader.util.ConfigSingleton;
 
 /**
  * Sole activity of the SimpleNewsReader application. This app reads a JSON news feed from a URL specified in the
@@ -70,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.news_item_list_swipe_refresh);
         swipeRefreshLayout.setOnRefreshListener(new SwipeToRefreshListener());
         swipeRefreshLayout.setOnChildScrollUpCallback(new ChildScrollUpCallback());
+        swipeRefreshLayout.setDistanceToTriggerSync(ConfigSingleton.getInstance().SwipeRefreshLayoutPullDistanceDP());
 
         refresh();
     }
@@ -109,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         imageLoader.init(imageConfig);
 
         // Create the INewsService as per config.properties.
-        newsService = new FakeSyncNewsService();
+        newsService = NewsServiceFactorySingleton.getSingleton().getNewsService();
         newsService.getNews(new GetNewsSuccessHandler(), new GetsNewsFailureHandler());
     }
 

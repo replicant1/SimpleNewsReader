@@ -63,6 +63,10 @@ public final class ConfigSingleton {
         return getBoolProperty("NewsService.fake.succeeds");
     }
 
+    public int SwipeRefreshLayoutPullDistanceDP() {
+        return getIntProperty("SwipeRefreshLayout.pull.distance.dp");
+    }
+
     public int NewsServiceTimeoutMillis() {
         return getIntProperty("NewsService.timeout.millis");
     }

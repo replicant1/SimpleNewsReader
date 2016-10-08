@@ -1,5 +1,7 @@
 package news.rod.bailey.simplenewsreader.service;
 
+import android.util.Log;
+
 import news.rod.bailey.simplenewsreader.util.ConfigSingleton;
 
 /**
@@ -8,6 +10,8 @@ import news.rod.bailey.simplenewsreader.util.ConfigSingleton;
  * different implementations of INewsService for testing purposes and production.
  */
 public class NewsServiceFactorySingleton {
+
+    private static final String LOG_TAG = NewsServiceFactorySingleton.class.getSimpleName();
 
     private static final NewsServiceFactorySingleton singleton = new NewsServiceFactorySingleton();
 
@@ -40,6 +44,11 @@ public class NewsServiceFactorySingleton {
             result = new AsyncNewsService();
         } else {
             // Not supported. A real news service that is sync makes no sense.
+            Log.e(LOG_TAG, "News service impl not supported. See config.properties.");
+        }
+
+        if (result != null) {
+            Log.d(LOG_TAG, "Vending an INewsService of class " + result.getClass());
         }
 
         return result;

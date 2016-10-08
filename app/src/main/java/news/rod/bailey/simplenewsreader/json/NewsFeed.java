@@ -4,12 +4,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by rodbailey on 6/10/2016.
+ * Top level object in the domain model. Represents an entire JSON feed whose content is to be displayed.
+ * Field values are assigned by GSON library.
  */
 public class NewsFeed {
-    public String title;
-
     public List<NewsFeedItem> rows;
+
+    public String title;
 
     @Override
     public String toString() {
@@ -19,8 +20,7 @@ public class NewsFeed {
 
         if (rows == null) {
             buf.append("null");
-        }
-        else {
+        } else {
             buf.append("[");
             for (NewsFeedItem item : rows) {
                 buf.append(item.toString() + ",");

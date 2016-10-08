@@ -17,7 +17,7 @@ You should be able to import the contents of this Github repository directly int
 - Select `Github`. 
 - In the resulting dialog, enter a Github repository URL of `https://github.com/replicant1/SimpleNewsReader`.
 
-To run the app you will need an AVD or real device that has at least Android API level 16 (4.1 JELLY BEAN).
+To run the app you will need an AVD or real device that has at least Android API level 16 (4.1 JELLY BEAN) and internet connectivity.
 
 
 ## Test Coverage
