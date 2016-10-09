@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import news.rod.bailey.simplenewsreader.adapter.NewsFeedItemArrayAdapter;
+import news.rod.bailey.simplenewsreader.app.NewsFeedCacheSingleton;
 import news.rod.bailey.simplenewsreader.app.SimpleNewsReaderApplication;
 import news.rod.bailey.simplenewsreader.json.NewsFeed;
 import news.rod.bailey.simplenewsreader.json.NewsFeedItem;
@@ -43,11 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     /**
-     * Provided by Universal Image Loader to handle async loading of the optional image for each news item
-     */
-    private ImageLoader imageLoader;
-
-    /**
      * Main component - a list of news items, one item per row
      */
     private ListView listView;
@@ -58,13 +54,55 @@ public class MainActivity extends AppCompatActivity {
     private INewsService newsService;
 
     /**
-     * Provides pull-to-refresh functionaity for the listview of news items
+     * Provides pull-to-hardRefresh functionaity for the listview of news items
      */
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    /**
+     * @param feed The NewsFeed, presumed already cached, that is to be installed in the UI. It's title will be
+     *                 put in the title bar, it's "rows" data will be put in the list view.
+     */
+    private void installNewsFeed(NewsFeed feed) {
+        // Put feed.title in the action bar
+        getSupportActionBar().setTitle(feed.title);
+
+        // Title and description are mandatory, image is not.
+        List<NewsFeedItem> items = feed.rows;
+        List<NewsFeedItem> strippedItems = new LinkedList<NewsFeedItem>();
+
+        for (NewsFeedItem item : items) {
+            if ((item.title != null) && (item.description != null)) {
+                strippedItems.add(item);
+            }
+        }
+
+        // Put parsed data in the list view
+        NewsFeedItemArrayAdapter adapter = new NewsFeedItemArrayAdapter(
+                strippedItems, ImageLoader.getInstance());
+        ListView listView = (ListView) findViewById(R.id.news_item_list);
+        listView.setAdapter(adapter);
+    }
+
+    private void maybeInitImageLoader() {
+        if (!ImageLoader.getInstance().isInited()) {
+            // Clear the singleton image cache (bit not what' on disk).
+            int memoryCacheBytes = ConfigSingleton.getInstance().ImageLoaderMemoryCacheKB() * 1024;
+            int diskCacheBytes = ConfigSingleton.getInstance().ImageLoaderDiskCacheKB() * 1024;
+
+            ImageLoaderConfiguration imageConfig = new ImageLoaderConfiguration.Builder(this)
+                    .memoryCacheSize(memoryCacheBytes)
+                    .diskCacheSize(diskCacheBytes)
+                    .writeDebugLogs()
+                    .build();
+            ImageLoader.getInstance().init(imageConfig);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.i(LOG_TAG, "Creating MainActivity");
 
         setContentView(R.layout.activity_main);
 
@@ -75,7 +113,18 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnChildScrollUpCallback(new ChildScrollUpCallback());
         swipeRefreshLayout.setDistanceToTriggerSync(ConfigSingleton.getInstance().SwipeRefreshLayoutPullDistanceDP());
 
-        refresh();
+        maybeInitImageLoader();
+
+        if (NewsFeedCacheSingleton.getInstance().containsFeedForUrl(ConfigSingleton.getInstance().NewsServiceUrl())) {
+            // We've already got the feed data cached, so no need to reload it. This happens when the MainActivity is
+            // re-created after an orientation change.
+            NewsFeed newsFeed = NewsFeedCacheSingleton.getInstance().getFeedForUrl(
+                    ConfigSingleton.getInstance().NewsServiceUrl());
+            installNewsFeed(newsFeed);
+        } else {
+            // News feed data not yet loaded - go fetch it.
+            hardRefresh();
+        }
     }
 
     @Override
@@ -84,11 +133,10 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
-            refresh();
+            hardRefresh();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -104,26 +152,14 @@ public class MainActivity extends AppCompatActivity {
      * lost. The JSON feed, which is only  "cached" by Volley and in the ListView itself, is also destroyed and must
      * be refetched.
      */
-    private void refresh() {
-        // Set the "refresh" animation going
+    private void hardRefresh() {
+        // Set the "hardRefresh" animation going. Will be turned off in the GetNewsSuccessHandler and GetsNewsFailureHandler
         swipeRefreshLayout.setRefreshing(true);
 
-        // Destroy cached images and creates a new cache
-        if (imageLoader != null) {
-            imageLoader.destroy();
-        }
+        NewsFeedCacheSingleton.getInstance().clear();
 
-        // Convert from KB to bytes
-        int memoryCacheBytes = ConfigSingleton.getInstance().ImageLoaderMemoryCacheKB() * 1024;
-        int diskCacheBytes = ConfigSingleton.getInstance().ImageLoaderDiskCacheKB() * 1024;
-
-        ImageLoaderConfiguration imageConfig = new ImageLoaderConfiguration.Builder(this)
-                .memoryCacheSize(memoryCacheBytes)
-                .diskCacheSize(diskCacheBytes)
-                .writeDebugLogs()
-                .build();
-        imageLoader = ImageLoader.getInstance();
-        imageLoader.init(imageConfig);
+        ImageLoader.getInstance().clearDiskCache();
+        ImageLoader.getInstance().clearMemoryCache();
 
         // Create the INewsService as per config.properties.
         newsService = NewsServiceFactorySingleton.getSingleton().getNewsService();
@@ -131,13 +167,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles failure of the HTTP GET that is used to retrieve the feed's JSON. Just cancels the "refresh" animation
+     * Handles failure of the HTTP GET that is used to retrieve the feed's JSON. Just cancels the "hardRefresh" animation
      * and raises a Toast with an error message in it.
      */
     private class GetsNewsFailureHandler implements Response.ErrorListener {
         @Override
         public void onErrorResponse(VolleyError error) {
             Log.w(LOG_TAG, error.getMessage(), error.getCause());
+            NewsFeedCacheSingleton.getInstance().clear();
             swipeRefreshLayout.setRefreshing(false);
             raiseFailureToast();
         }
@@ -145,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Handles successfull retrieval of the feed's JSON file. Parses out the data into the local domain model then
-     * feeds that model into the list view via the NewsFeedItemArrayAdapter. Cancels the "refresh" animation.
+     * feeds that model into the list view via the NewsFeedItemArrayAdapter. Cancels the "hardRefresh" animation.
      */
     private class GetNewsSuccessHandler implements Response.Listener<String> {
 
@@ -158,22 +195,10 @@ public class MainActivity extends AppCompatActivity {
                 NewsFeedParser parser = new NewsFeedParser();
                 NewsFeed feed = parser.parseFeedFromString(response);
 
-                // Put feed.title in the action bar
-                getSupportActionBar().setTitle(feed.title);
+                // Cache the feed
+                NewsFeedCacheSingleton.getInstance().putFeedForUrl(feed, ConfigSingleton.getInstance().NewsServiceUrl());
 
-                // Title and description are mandatory, image is not.
-                List<NewsFeedItem> items = feed.rows;
-                List<NewsFeedItem> strippedItems = new LinkedList<NewsFeedItem>();
-                for (NewsFeedItem item : items) {
-                    if ((item.title != null) && (item.description != null)) {
-                        strippedItems.add(item);
-                    }
-                }
-
-                // Put parsed data in the list view
-                NewsFeedItemArrayAdapter adapter = new NewsFeedItemArrayAdapter(strippedItems, imageLoader);
-                ListView listView = (ListView) findViewById(R.id.news_item_list);
-                listView.setAdapter(adapter);
+                installNewsFeed(feed);
             } else {
                 Log.w(LOG_TAG, "Received news feed string of null");
                 raiseFailureToast();
@@ -185,17 +210,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles when user swipes on list view in such a way as to indicate they want to "pull to refresh".
+     * Handles when user swipes on list view in such a way as to indicate they want to "pull to hardRefresh".
      */
     private class SwipeToRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
         @Override
         public void onRefresh() {
-            refresh();
+            hardRefresh();
         }
     }
 
     /**
-     * Bug fix supplied in support library v24.1.0 - enables us to turn off triggerring of the refresh with the
+     * Bug fix supplied in support library v24.1.0 - enables us to turn off triggerring of the hardRefresh with the
      * "pull" gesture unless the first row of the list is showing.
      */
     private class ChildScrollUpCallback implements SwipeRefreshLayout.OnChildScrollUpCallback {
