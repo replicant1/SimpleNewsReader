@@ -12,10 +12,10 @@ import news.rod.bailey.simplenewsreader.app.SimpleNewsReaderApplication;
 public class AssetUtils {
 
     /**
+     * Loads a given file from the /assets folder for this app.
      *
-     * @param assetFileName
-     * @return
-     * @throws IOException
+     * @param assetFileName Simple file name to be loaded.
+     * @return Contents of the asset file in String form
      */
     public static String loadAssetFileAsString(String assetFileName) throws IOException {
         BufferedReader bufferedReader = null;

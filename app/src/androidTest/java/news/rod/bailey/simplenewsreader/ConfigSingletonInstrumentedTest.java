@@ -41,7 +41,7 @@ public class ConfigSingletonInstrumentedTest {
         ConfigSingleton config = ConfigSingleton.getInstance();
         assertNotNull(config);
         Assert.assertEquals("https://dl.dropboxusercontent.com/u/746330/facts.json", config.NewsServiceUrl());
-        Assert.assertEquals(2500, config.NewsServiceTimeoutMillis());
+        Assert.assertEquals(5000, config.NewsServiceTimeoutMillis());
         Assert.assertEquals(5000, config.FakeNewsServiceDelayMillis());
         Assert.assertEquals("sample.json", config.FakeNewsServiceAsset());
     }

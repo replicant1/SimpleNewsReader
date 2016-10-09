@@ -19,10 +19,9 @@ You should be able to import the contents of this Github repository directly int
 
 To run the app you will need an AVD or real device that has at least Android API level 16 (4.1 JELLY BEAN) and internet connectivity.
 
+## Tests
 
-## Test Coverage
-
-TBD
+There are a number of Espresso and JUnit unit tests provided.
 
 ##Assumptions
 Being a simple coding exercise, I have made a few simplifying assumpions:
@@ -48,5 +47,6 @@ Note that the feed at `https://dl.dropboxusercontent.com/u/746330/facts.json` su
 ##Potential improvements
 
 - Only cache the thumbnails, not the original images at their full size.
+- There are better ways to create the Views for each row in the list, using the `ViewHolder` pattern to enable recycling of Views that are off-screen.
 - When an image is not found, don't keep trying to reload it in future. Somehow record that we have already tried to load it in this session, and failed.
 - Cache the JSON text so that it is not reloaded on an orientation change. Images are not reloaded on an orientation change becuase the ImageLoader's cache persists across the change in orientation and the images returned are cacheable. But the JSON feed at the default location is marked as being not cacheable, meaning that Volley doesn't cache it, meaning that it is reloaded upon an orientation change.
