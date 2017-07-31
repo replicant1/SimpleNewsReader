@@ -1,16 +1,16 @@
-#Simple News Reader
+# Simple News Reader
 
 Rod Bailey
 Sunday 9 October 2016
 
-##Summary
+## Summary
 This is an Android coding exercise. The app is called `SimpleNewsReader` and reads in a list of news items read from a well defined remote JSON file. It supports local caching of images and text and the ability to manually request a refresh of all the loaded data.
 
-##Screenshots
+## Screenshots
 
 ![Portrait](/snr_screenshot_portrait.png)
 
-#Running the app
+# Running the app
 You should be able to import the contents of this Github repository directly into Android Studio 2 or later:
 
 - Select menu `VCS` then menu item `Checkout from version control >` 
@@ -23,14 +23,14 @@ To run the app you will need an AVD or real device that has at least Android API
 
 There are a number of Espresso and JUnit unit tests provided.
 
-##Assumptions
+## Assumptions
 Being a simple coding exercise, I have made a few simplifying assumpions:
 
 - News items that don't have **both** a title and a description should not be displayed at all.
 - The location from which the JSON is loaded won't change regularly - it is configured in `assets/config.proerties`
 - The presence of the right arrow `>` in the requirements document at the right of each list item is an oversight. No functionaity for it is defined, so it should be omitted.
 
-##Technologies
+## Technologies
 The following libraries are used:
 
 - **Volley** - by Google. Handles the mechanics of the HTTP request for downloading the JSON. Saves me having to deal with redirects etc. Also can do caching.
@@ -38,13 +38,13 @@ The following libraries are used:
 - **JUnit** - for unit testing.
 - **UIL** - Android Universal Image Loader. Asynchronously loads and caches the images referenced from the JSON.
 
-##Caching
+## Caching
 
 `UIL` provides memory and disk caching upon request. We establish a memory cache of 200KB and a disk cache of 250KB. These figures are arbitrary selections. They are specified in `/assets/config.properties`. 
 
 Note that the feed at `https://dl.dropboxusercontent.com/u/746330/facts.json` supplies a header of `max-age=0`, meaning that it can't be cached, despite the fact that Volley has the capability to do so.
 
-##Potential improvements
+## Potential improvements
 
 - Only cache the thumbnails, not the original images at their full size.
 - There are better ways to create the Views for each row in the list, using the `ViewHolder` pattern to enable recycling of Views that are off-screen.
